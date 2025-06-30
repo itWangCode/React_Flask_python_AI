@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的API服务</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            padding: 3rem;
+            max-width: 800px;
+            width: 90%;
+            text-align: center;
+        }
+
+        .logo {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        h1 {
+            color: #333;
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+        }
+
+        .status {
+            display: inline-block;
+            background: #10b981;
+            color: white;
+            padding: 0.5rem 1.5rem;
+            border-radius: 25px;
+            font-weight: 600;
+            margin-bottom: 2rem;
+        }
+
+        .api-endpoints {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .endpoint-card {
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 15px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .endpoint-card:hover {
+            border-color: #667eea;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .endpoint-card h3 {
+            color: #333;
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .endpoint-url {
+            background: #667eea;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            margin: 0.5rem 0;
+        }
+
+        .method {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-top: 0.5rem;
+        }
+
+        .get { background: #10b981; color: white; }
+        .post { background: #f59e0b; color: white; }
+        .put { background: #3b82f6; color: white; }
+        .delete { background: #ef4444; color: white; }
+
+        .test-button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 0.75rem 2rem;
+            border-radius: 10px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 0.5rem;
+        }
+
+        .test-button:hover {
+            background: #5a67d8;
+            transform: translateY(-2px);
+        }
+
+        .footer {
+            margin-top: 2rem;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .response-area {
+            background: #1f2937;
+            color: #10b981;
+            padding: 1rem;
+            border-radius: 10px;
+            margin-top: 1rem;
+            font-family: 'Courier New', monospace;
+            text-align: left;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">🚀</div>
+        <h1>我的API服务</h1>
+        <p class="subtitle">现代化的全栈Web应用</p>
+        <div class="status">✅ 服务运行正常</div>
+
+        <div class="api-endpoints">
+            <div class="endpoint-card" onclick="testEndpoint('/api/health')">
+                <h3>健康检查</h3>
+                <div class="endpoint-url">/api/health</div>
+                <span class="method get">GET</span>
+                <p>检查API服务状态</p>
+            </div>
+
+            <div class="endpoint-card" onclick="showRegisterForm()">
+                <h3>用户注册</h3>
+                <div class="endpoint-url">/auth/register</div>
+                <span class="method post">POST</span>
+                <p>创建新用户账户</p>
+            </div>
+
+            <div class="endpoint-card" onclick="showLoginForm()">
+                <h3>用户登录</h3>
+                <div class="endpoint-url">/auth/login</div>
+                <span class="method post">POST</span>
+                <p>用户身份验证</p>
+            </div>
+
+            <div class="endpoint-card" onclick="testEndpoint('/api/articles')">
+                <h3>文章列表</h3>
+                <div class="endpoint-url">/api/articles</div>
+                <span class="method get">GET</span>
+                <p>获取所有文章</p>
+            </div>
+        </div>
+
+        <div>
+            <button class="test-button" onclick="testAllEndpoints()">测试所有API</button>
+            <button class="test-button" onclick="openSwagger()">API文档</button>
+        </div>
+
+        <div id="response" class="response-area"></div>
+
+        <div class="footer">
+            <p>🔧 开发环境 | 📱 前端: http://localhost:3000 | 🔙 后端: http://localhost:5001</p>
+            <p>使用 Flask + SQLAlchemy + JWT 构建</p>
+        </div>
+    </div>
+
+    <script>
+        async function testEndpoint(url) {
+            const responseDiv = document.getElementById('response');
+            responseDiv.style.display = 'block';
+            responseDiv.innerHTML = '正在请求...';
+
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                responseDiv.innerHTML = `<strong>${url}</strong>\n${JSON.stringify(data, null, 2)}`;
+            } catch (error) {
+                responseDiv.innerHTML = `错误: ${error.message}`;
+            }
+        }
+
+        function showRegisterForm() {
+            const responseDiv = document.getElementById('response');
+            responseDiv.style.display = 'block';
+            responseDiv.innerHTML = `
+<strong>用户注册示例:</strong>
+curl -X POST http://localhost:5001/auth/register \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "username": "testuser",
+    "email": "test@example.com",
+    "password": "123456"
+  }'`;
+        }
+
+        function showLoginForm() {
+            const responseDiv = document.getElementById('response');
+            responseDiv.style.display = 'block';
+            responseDiv.innerHTML = `
+<strong>用户登录示例:</strong>
+curl -X POST http://localhost:5001/auth/login \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "username": "testuser",
+    "password": "123456"
+  }'`;
+        }
+
+        async function testAllEndpoints() {
+            const endpoints = ['/api/health', '/api/articles'];
+            const responseDiv = document.getElementById('response');
+            responseDiv.style.display = 'block';
+            responseDiv.innerHTML = '正在测试所有端点...';
+
+            let results = '';
+            for (const endpoint of endpoints) {
+                try {
+                    const response = await fetch(endpoint);
+                    const data = await response.json();
+                    results += `\n${endpoint}: ✅ 正常\n`;
+                } catch (error) {
+                    results += `\n${endpoint}: ❌ ${error.message}\n`;
+                }
+            }
+            responseDiv.innerHTML = `<strong>API测试结果:</strong>${results}`;
+        }
+
+        function openSwagger() {
+            alert('API文档功能开发中...');
+        }
+    </script>
+</body>
+</html>
